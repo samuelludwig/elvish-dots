@@ -81,11 +81,26 @@ var nvim-loc = (search-external nvim)
 set-env EDITOR $nvim-loc
 set-env VISUAL $nvim-loc
 
-# ALIASES
+# ALIASES & COMMANDS
 
 fn n  {|@args| e:nvim -O $@args }
 fn ll {|@args| e:exa -lgah --icons $@args }
 fn gs {|@args| e:lazygit $@args }
+
+if (has-external jet) {
+  edit:add-var from-edn~ {|@in|
+    put $@in | to-lines | e:jet -i edn -o json | from-json
+  }
+  edit:add-var to-edn~ {|@in|
+    put $@in | to-json | e:jet -i json -o edn --keywordize
+  }
+  edit:add-var from-yaml~ {|@in|
+    put $@in | to-lines | e:jet -i yaml -o json | from-json
+  }
+  edit:add-var to-yaml~ {|@in|
+    put $@in | to-json | e:jet -i json -o yaml
+  }
+}
 
 # COMPLETION
 
