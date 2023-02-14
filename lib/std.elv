@@ -316,13 +316,23 @@ fn hexstring { |@n|
 }
 
 fn comp {|@fns| 
-  if (== 1 (count $fns)) {
+  if (is-one (count $fns)) {
     put (first $fns)
   } else {
-    var this-fn~ = (first $fns)
     var rem-fns = (rest $fns)
-    var next-fn~ = (first $rem-fns)
-    set rem-fns[0] = {|@args| $this-fn~ ($next-fn~ $@args) }
+    set rem-fns[0] = {|@args| (first $fns) ((second $fns) $@args) }
     comp (all $rem-fns)
   }
 }
+
+# Another implementation
+# fn comp {|@fns|
+#   put {|@args|
+#     var i = (count $fns)
+#     while (> $i 0) {
+#       set i = (dec $i)
+#       set @args = ($fns[$i] $@args)
+#     }
+#     put $@args
+#   }
+# }  
