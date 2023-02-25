@@ -50,13 +50,33 @@ try { use doc } catch { }
 # set edit:completion:arg-completer[pya] = $edit:completion:arg-completer[python:activate]
 
 #==================================================== - PATHS
-set paths = [
-  ~/.local/bin
-	~/bin
-	/usr/local/bin
-	/usr/local/sbin
-	$@paths
-]
+
+if (eq (hostname) DESKTOP-38PI5E5) {
+  # My own personal protection to cut out all the cruft when im on WSL
+  set paths = [
+    ~/.local/bin
+    ~/bin
+    /usr/local/bin
+    /usr/local/sbin
+    /bin
+    /sbin
+    /usr/bin
+    /usr/sbin
+    /snap/bin
+    /usr/local/games
+    /usr/games
+    #;$@paths
+  ]
+} else {
+  set paths = [
+    ~/.local/bin
+    ~/bin
+    /usr/local/bin
+    /usr/local/sbin
+    $@paths
+  ]
+}
+
 # var ppaths = [
 # 	/Library/TeX/texbin
 # 	/opt/local/bin
@@ -83,6 +103,12 @@ set-env VISUAL $nvim-loc
 
 # ALIASES & COMMANDS
 
+fn when-ext {|x lambda @args| 
+  if (has-external $x) { 
+    $lambda $@args
+  }
+}
+
 fn n  {|@args| e:nvim -O $@args }
 fn ll {|@args| e:exa -lgah --icons $@args }
 fn gs {|@args| e:lazygit $@args }
@@ -102,13 +128,23 @@ if (has-external jet) {
   }
 }
 
+fn fj {|x| 
+  if (not (and (has-external curl) (has-external jq))) {
+    print "Requires curl and jq to be installed"
+  } else {
+    var clojars-url = "https://clojars.org/search?q="$x"&format=json"
+    e:curl -s $clojars-url | e:jq --raw-output ' .results[] | .group_name + "/" + .jar_name + "\n    " + .description '
+  }
+}
+
 # COMPLETION
 
-eval (carapace _carapace|slurp)
+when-ext carapace { eval (e:carapace _carapace|slurp) }
+when-ext navi     { eval (e:navi widget elvish|slurp) }
 
 # PROMPT
 
-eval (starship init elvish)
+when-ext starship { eval (e:starship init elvish) }
 
 # EDIT STUFF
 
